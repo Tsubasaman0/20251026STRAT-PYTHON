@@ -20,6 +20,7 @@ for file_name in file_list:
 os.makedirs(folder, exist_ok=True)
 
 
+
 # 2:トータル売り上げと平均価格のデータ追加
 
 tabel_out_data = []
@@ -43,4 +44,10 @@ for f in data:
     tabel_out_data.append(pd.concat([f, summary_row]))
 
 
-# 3:棒グラフの生成
+# 3:csvファイルごとにデータ作成
+
+fig,axes = plt.subplots(1, 2, tight_layout=True)
+
+for data in tabel_out_data:
+	
+	axes[0] = 

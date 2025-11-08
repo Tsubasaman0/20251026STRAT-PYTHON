@@ -25,20 +25,22 @@ for csv_path in csv_files:
     try:
         df = pd.read_csv(csv_path)
     except Exception as e:
-        print(f"WARNIG 読込失敗: {csv_path.name}({e})")
+        print(f"WARNING 読込失敗: {csv_path.name}({e})")
         continue
     
     required_cols = {"item", "price", "count"}
     if not required_cols.issubset(df.columns):
-        print(f"WARNING カラム不足: {csv_path.name} 必要： {required_cols} 実際 {set(df.columns)}")
+        print(f"WARNING カラム不足: {csv_path.name} 必要： {required_cols} 実際: {set(df.columns)}")
         continue
     
-    # ここまで修正済み
-    csv_path["total"]    	= csv_path["price"] * csv_path["count"]
-    total_sales			    = round(csv_path["total"].sum())
-    average_price   		= round(csv_path["price"].mean())
-    top_sales_item_name		= csv_path["item"][csv_path["total"].idxmax()]
-    top_sales_item_total    = csv_path["total"].max()
+    # ここまで修正済
+        
+        
+    df["total"]           	= df["price"] * df["count"]
+    total_sales			    = round(df["total"].sum())
+    average_price   		= round(df["price"].mean())
+    top_sales_item_name		= df["item"][df["total"].idxmax()]
+    top_sales_item_total    = df["total"].max()
     top_share_item_rate     = round(top_sales_item_total / total_sales * 100, 1)
     fig,axes                = plt.subplots(1, 2, figsize=(10, 5))
     summary_row     	    = pd.DataFrame([{
@@ -62,8 +64,8 @@ for csv_path in csv_files:
     
     # 棒グラフの作成
     bars = axes[0].bar(
-        graph_out_data["item"],
-        graph_out_data["total"],
+        df["item"],
+        df["total"],
         color="blue"
     )
     axes[0].set_xlabel("item")
@@ -79,6 +81,6 @@ for csv_path in csv_files:
             va="bottom"
             
         )
-    print(graph_out_data)
-    plt.savefig(f"{folder}/{data_label}.png")
+    plt.savefig(out_dir)
     plt.close(fig)
+    print(ai_comment)

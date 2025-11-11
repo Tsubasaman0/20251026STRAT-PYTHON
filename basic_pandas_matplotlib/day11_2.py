@@ -42,8 +42,9 @@ for csv_path in csv_files:
         
         
     df["total"]           	= df["price"] * df["count"]
-    total_sales			    = int(round(df["total"].sum()))
-    average_price   		= int(round(df["price"].mean()) if len(df) else 0)
+    total_sales			    = int(round(df["total"] * df["count"]).sum())
+    total_count             = int(round(df["count"].sum()))
+    average_price   		= int(round(total_sales / total_count if total_count > 0 else 0))
     top_sales_item_name		= df["item"][df["total"].idxmax()]
     top_sales_item_total    = df["total"].max()
     top_share_item_rate     = round(top_sales_item_total / total_sales * 100, 1)
@@ -72,6 +73,7 @@ for csv_path in csv_files:
     plot_df        = df.sort_values("total",ascending=False).reset_index(drop=True)
     graph_labels   = plot_df["item"]
     graph_total    = plot_df["total"]
+    print(plot_df)
     # 棒グラフの作成
     bars = axes[0].bar(
         graph_labels,

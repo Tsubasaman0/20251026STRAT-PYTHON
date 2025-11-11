@@ -47,7 +47,7 @@ for csv_path in csv_files:
     top_sales_item_name		= df["item"][df["total"].idxmax()]
     top_sales_item_total    = df["total"].max()
     top_share_item_rate     = round(top_sales_item_total / total_sales * 100, 1)
-    fig,axes                = plt.subplots(1, 2, figsize=(10, 5))
+    
     summary_row     	    = pd.DataFrame([{
         "item" : "total_sales",
         "count" : None,
@@ -68,10 +68,14 @@ for csv_path in csv_files:
         )
     # グラフの作成
     
+    fig,axes       = plt.subplots(1, 2, figsize=(10, 5))
+    plot_df        = df.sort_values("total",ascending=False).reset_index(drop=True)
+    graph_labels   = plot_df["item"]
+    graph_total    = plot_df["total"]
     # 棒グラフの作成
     bars = axes[0].bar(
-        df["item"],
-        df["total"],
+        graph_labels,
+        graph_total,
         color="blue"
     )
     axes[0].set_xlabel("item")
@@ -91,7 +95,7 @@ for csv_path in csv_files:
     
     # 円グラフ作成
     axes[1].pie(
-        df["total"]
+        graph_total
     )
     
     out_dir.mkdir(parents=True, exist_ok=True)

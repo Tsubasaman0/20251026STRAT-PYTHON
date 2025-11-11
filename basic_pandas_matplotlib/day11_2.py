@@ -63,6 +63,7 @@ for i, f in enumerate(data):
     )
     axes[0].set_xlabel("item")
     axes[0].set_ylabel("total_sales(JPY)")
+    axes[0].set_title(f"{data_label}_total_sales")
     for bar in bars:
         x = bar.get_x() + bar.get_width()/2
         y = bar.get_height()

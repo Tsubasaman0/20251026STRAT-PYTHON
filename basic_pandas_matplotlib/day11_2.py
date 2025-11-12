@@ -120,4 +120,7 @@ for csv_path in csv_files:
     plt.close(fig)
     (Path(out_dir/ f"comment_{data_label}.txt")).write_text(ai_comment, encoding="utf-8")
     
+    summary_row_df = pd.concat([df, summary_row], ignore_index=False)
+    with pd.ExcelWriter(Path(out_dir / f"repprt_{data_label}.xlsx")) as writer:
+    	summary_row_df.to_excel(writer, index=False)
     print(ai_comment)

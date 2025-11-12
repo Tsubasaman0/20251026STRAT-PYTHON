@@ -9,7 +9,7 @@ import os
 # 1:準備 --ファイルやフォルダを作成するための変数やファイルの読み込み
 
 today       = dt.date.today().strftime("%Y_%m_%d")
-out_root    = Path("A_monthly_reports")
+out_root    = Path("my_monthly_reports")
 in_dir      = Path("data_files")
 csv_files   = sorted(p for p in in_dir.iterdir() if p.suffix.lower() == ".csv")
 out_root.mkdir(parents=True, exist_ok=True)
@@ -35,14 +35,14 @@ for csv_path in csv_files:
         print(f"WARNING カラム不足: {csv_path.name} 必要： {required_cols} 実際: {set(df.columns)}")
         continue
     
-    # 数値数値の安全化
+    # 数値の安全化
     df["price"] = pd.to_numeric(df["price"], errors="coerce").fillna(0)
     df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0).astype(int)
     df["total"]           	= df["price"] * df["count"]
      
-    total_sales			    = int(round(df["total"].sum()))
+    total_sales			    = int(df["total"].sum())
     total_count             = int(round(df["count"].sum()))
-    ave_price_weighted   		= int(round(total_sales / total_count if total_count > 0 else 0))
+    avg_price_weighted   		= int(round(total_sales / total_count if total_count > 0 else 0))
     
     if len(df) and total_sales > 0:
         top_idx                 = df["total"].idxmax()
@@ -52,7 +52,7 @@ for csv_path in csv_files:
     else:
         top_sales_item_name, top_sales_item_total, top_share_item_rate = "-", 0.0, 0.0
     
-    summary_row     	    = pd.DataFrame([{
+    summary_tail     	    = pd.DataFrame([{
         "item" : "total_sales",
         "count" : None,
         "price" : None,
@@ -61,7 +61,7 @@ for csv_path in csv_files:
         "item" : "average_price",
         "count" : None,
         "price" : None,
-        "total" : ave_price_weighted}
+        "total" : avg_price_weighted}
     ])
     
 
@@ -85,7 +85,7 @@ for csv_path in csv_files:
     )
     axes[0].set_xlabel("item")
     axes[0].set_ylabel("total_sales(JPY)")
-    axes[0].set_title(f"{data_label}total_sales")
+    axes[0].set_title(f"{data_label} total_sales")
     axes[0].tick_params(axis="x", rotation=30)
     for bar in bars:
         x = bar.get_x() + bar.get_width()/2
@@ -93,7 +93,7 @@ for csv_path in csv_files:
         axes[0].text(
             x,
             y,
-            int(y),
+            f"{int(y):,}",
             ha="center",
             va="bottom"
             
@@ -113,14 +113,16 @@ for csv_path in csv_files:
         axes[1].axis("off")
         axes[1].text(0.0, 0.5, "データなし", fontsize=11, va="center")
     
-    axes[1].set_title(f"{data_label}total_sales_share")
+    axes[1].set_title(f"{data_label} total_sales_share")
+
     
     out_dir.mkdir(parents=True, exist_ok=True)
+    fig.tight_layout()
     plt.savefig(out_dir / f"report_{data_label}.png", dpi=150)
     plt.close(fig)
-    (Path(out_dir/ f"comment_{data_label}.txt")).write_text(ai_comment, encoding="utf-8")
+    (out_dir/ f"comment_{data_label}.txt").write_text(ai_comment, encoding="utf-8")
     
-    summary_row_df = pd.concat([df, summary_row], ignore_index=False)
-    with pd.ExcelWriter(Path(out_dir / f"repprt_{data_label}.xlsx")) as writer:
-    	summary_row_df.to_excel(writer, index=False)
+    monthly_table = pd.concat([df, summary_tail], ignore_index=False)
+    with pd.ExcelWriter(out_dir / f"average_price_wighted_{data_label}.xlsx") as writer:
+        monthly_table.to_excel(writer, index=False)
     print(ai_comment)

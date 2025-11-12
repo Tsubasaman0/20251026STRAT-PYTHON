@@ -66,7 +66,7 @@ for csv_path in csv_files:
     
 
     ai_comment = (
-        f" {data_label} 月の総売上は {total_sales} 円、平均単価(加重)は {ave_price_weighted} 円です。\n"
+        f" {data_label} 月の総売上は {total_sales} 円、平均単価(加重)は {avg_price_weighted} 円です。\n"
         f"最も売れた商品は「{top_sales_item_name}」で、全体の {top_share_item_rate}% を占めています。\n"
         f"全体的に、上位商品の売上が構成比の大部分を占める傾向があります"
         )

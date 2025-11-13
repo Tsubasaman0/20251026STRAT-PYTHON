@@ -92,12 +92,7 @@ for csv_path in csv_files:
     )
     axes[0].set_xlabel("item")
     axes[0].set_ylabel("total_sales(JPY)")
-<<<<<<< HEAD
-    axes[0].set_title(f"{data_label}_total_sales")
-=======
-    axes[0].set_title(f"{data_label} total_sales")
-    axes[0].tick_params(axis="x", rotation=30)
->>>>>>> feature/monthly-report
+
     for bar in bars:
         x = bar.get_x() + bar.get_width()/2
         y = bar.get_height()
@@ -109,11 +104,6 @@ for csv_path in csv_files:
             va="bottom"
             
         )
-<<<<<<< HEAD
-    print(graph_out_data)
-    plt.savefig(f"{folder}/{data_label}.png")
-    plt.close(fig)
-=======
     
     # 円グラフ作成
     if total_sales > 0:
@@ -158,4 +148,3 @@ summary_df["mom_percent"] = (
     summary_df["total_sales"].pct_change().mul(100).round(1)
     )
 summary_df.to_csv(out_root / "summary_all_month.csv", index=False, encoding="utf-8-sig")
->>>>>>> feature/monthly-report

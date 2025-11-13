@@ -17,7 +17,7 @@ out_root.mkdir(parents=True, exist_ok=True)
 
 # 2:トータル売り上げと平均価格、棒グラフ用データなどのデータ作成
 
-summary_row = []
+summary_rows = []
 
 for csv_path in csv_files:
     data_label              = csv_path.stem.replace("data_", "")
@@ -38,12 +38,15 @@ for csv_path in csv_files:
     # 数値の安全化
     df["price"] = pd.to_numeric(df["price"], errors="coerce").fillna(0)
     df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0).astype(int)
-    df["total"]           	= df["price"] * df["count"]
+    df["total"] = df["price"] * df["count"]
      
     # 合計売上と単価の加重平均金額
     total_sales			    = int(df["total"].sum())
     total_count             = int(round(df["count"].sum()))
-    avg_price_weighted   		= int(round(total_sales / total_count if total_count > 0 else 0))
+    avg_price_weighted      = int(round(total_sales / total_count if total_count > 0 else 0))
+    
+    # csv用に商品構成を入力
+    df["share_percent"] = (df["total"] / total_sales * 100).round(2) if total_sales > 0 else 0
     
     if len(df) and total_sales > 0:
         top_idx                 = df["total"].idxmax()
@@ -77,6 +80,9 @@ for csv_path in csv_files:
     plot_df        = df.sort_values("total",ascending=False).reset_index(drop=True)
     graph_labels   = plot_df["item"]
     graph_total    = plot_df["total"]
+    TOP_N          = 3
+    top_total_df   = plot_df["total"].head(TOP_N)
+    top_item_df    = plot_df["item"].head(TOP_N)
     
     # 棒グラフの作成
     bars = axes[0].bar(
@@ -103,8 +109,8 @@ for csv_path in csv_files:
     # 円グラフ作成
     if total_sales > 0:
         axes[1].pie(
-            graph_total,
-            labels=graph_labels,
+            top_total_df,
+            labels=top_item_df,
             startangle=90,
             autopct="%1.1f%%",
             counterclock=False
@@ -124,6 +130,22 @@ for csv_path in csv_files:
     (out_dir/ f"comment_{data_label}.txt").write_text(ai_comment, encoding="utf-8")
     
     monthly_table = pd.concat([df, summary_tail], ignore_index=False)
-    with pd.ExcelWriter(out_dir / f"average_price_wighted_{data_label}.xlsx") as writer:
+    with pd.ExcelWriter(out_dir / f"average_price_weighted_{data_label}.xlsx") as writer:
         monthly_table.to_excel(writer, index=False)
+    
+    summary_rows.append({
+        "monthly": data_label,
+        "total_sales" : total_sales,
+        "average_price" : avg_price_weighted,
+        "top_item" : top_sales_item_name,
+        "top_share_percent" : top_share_item_rate
+    })
     print(ai_comment)
+
+# 月の比較表の出力
+summary_df = pd.DataFrame(summary_rows)
+summary_df = summary_df.sort_values("monthly").reset_index(drop=True)
+summary_df["mom_percent"] = (
+    summary_df["total_sales"].pct_change().mul(100).round(1)
+    )
+summary_df.to_csv(out_root / "summary_all_month.csv", index=False, encoding="utf-8-sig")

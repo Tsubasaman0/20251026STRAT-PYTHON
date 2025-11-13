@@ -1,0 +1,19 @@
+# Python仮想環境
+.venv/
+
+# キャッシュやビルド系
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+dist/
+*.egg-info/
+
+# VS Code設定（個人ローカル）
+.vscode/
+!.vscode/settings.json
+
+# OSやエディタが生成する不要ファイル
+.DS_Store
+Thumbs.db

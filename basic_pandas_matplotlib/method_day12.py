@@ -1,0 +1,57 @@
+from pathlib import Path
+import datetime as dt
+import pandas as pd
+import matplotlib.pyplot as plt
+
+#1 準備、ファイル、フォルダ作のための変数やファイルの読み込み
+
+today       = dt.date.today().strftime("%Y_%m_%d")
+out_root    = Path("my_monthly_reports")
+in_dir      = Path("data_files")
+csv_files   = sorted(p for p in in_dir.iterdir() if p.suffix.lower() == ".csv")
+out_root.mkdir(parents=True, exist_ok=True)
+
+TOP_N       = 3 # 円グラフに出す上位件数
+
+def load_and_prepara(csv_path: Path) -> pd.DataFrame | None:
+    """ひとつのCSVをも読み込んで、全処理まで済ませたdfを返す、失敗したらNone"""
+    try:
+        df = pd.read_csv(csv_path)
+    except Exception as e:
+        print(f"WARNING 読込失敗: {csv_path.name} ({e})")
+        return None
+    
+    required_cols = {"item", "price", "count"}
+    if not required_cols.issubset(df.columns):
+        print(f"WARNING カラム不足: {csv_path.name} 必要: {required_cols} 実際: {set(df.columns)}")
+        return None
+    
+    #数値の安全化
+    df["price"] = pd.to_numeric(df["price"], errors="coerce").fillna(0)
+    df["count"] = pd.to_numeric(df["count"], errors="coerce").fillna(0).astype(int)
+    df["total"] = df["price"] * df["count"]
+
+    return df
+
+#2 total売り上げと平均価格、棒グラフデータ用などのデータ作成
+
+summary_row = []
+
+for csv_path in csv_files:
+    data_lavel = csv_path.stem.replace("data_", "")
+    out_dir    = out_root / f"report_{data_lavel}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # 読込と前処理（ここが関数になった）
+    df = load_and_prepara(csv_path)
+    if df is None:
+        continue # このファイルはスキップ
+
+    # 合計売上と単価の加重平均金額
+    total_sales         = int(df["total"].sum())
+    total_count         = int(df["count"].sum())
+    avg_price_weighted  = int(round(total_sales / total_count)) if total_count > 0 else 0
+    
+    # csv用商品構成を入力
+    if total_sales > 0:
+        continue#ここまで

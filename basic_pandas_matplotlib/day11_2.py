@@ -42,7 +42,7 @@ for csv_path in csv_files:
      
     # 合計売上と単価の加重平均金額
     total_sales			    = int(df["total"].sum())
-    total_count             = int(round(df["count"].sum()))
+    total_count             = int(df["count"].sum())
     avg_price_weighted      = int(round(total_sales / total_count if total_count > 0 else 0))
     
     # csv用に商品構成を入力

@@ -54,4 +54,45 @@ for csv_path in csv_files:
     
     # csv用商品構成を入力
     if total_sales > 0:
-        continue#ここまで
+        df["share_percent"] = (df["total"] / total_sales * 100).round(2)
+    else:
+        df["share_percent"] = 0
+        
+    # トップ商品情報
+    if len(df) and total_sales > 0:
+        top_idx              = df["total"].idxmax()
+        top_sales_item_name  = str(df.loc[top_idx], "item")
+        top_sales_item_total = float(df.loc([top_idx, "index"]))
+        top_sales_item_rate  = round((top_sales_item_total)/ total_sales / 100, 1)
+    else:
+        top_sales_item_name, top_sales_item_total, top_sales_item_rate = "-", 0.0, 0.0
+        
+    # テーブル末尾にサマリー行をつける
+    summary_tail = pd.DataFrame([
+        {
+            "item": "total_sales",
+            "count": None,
+            "price": None,
+            "total": total_sales
+        },
+        {
+            "item": "average_price_weighted",
+            "count": None,
+            "price": None,
+            "total": avg_price_weighted
+        }
+    ])
+    
+    ai_comment = (
+        f"{data_lavel} 月に総売り上げ {total_sales} 円、平均単価（加重） {avg_price_weighted} 円です。\n"
+        f"最も売れた商品は「{top_sales_item_name}」で、全体の {top_sales_item_rate}% 占めています。\n"
+        f"全体的に、状商品の売り上げが構成比の大部分を占める傾向があります"
+    )
+    
+    # グラフ作成
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+
+    # 棒グラフ用のデータ(降順)
+    plot_df         = df.sort_values("total", ascending=False).reset_index(drop=True)
+    graph_labels    = plot_df["item"] 
+    

@@ -35,7 +35,7 @@ def load_and_prepara(csv_path: Path) -> pd.DataFrame | None:
 
 #2 total売り上げと平均価格、棒グラフデータ用などのデータ作成
 
-summary_row = []
+summary_rows = []
 
 for csv_path in csv_files:
     data_lavel = csv_path.stem.replace("data_", "")
@@ -61,9 +61,9 @@ for csv_path in csv_files:
     # トップ商品情報
     if len(df) and total_sales > 0:
         top_idx              = df["total"].idxmax()
-        top_sales_item_name  = str(df.loc[top_idx], "item")
-        top_sales_item_total = float(df.loc([top_idx, "index"]))
-        top_sales_item_rate  = round((top_sales_item_total)/ total_sales / 100, 1)
+        top_sales_item_name  = str(df.loc[top_idx, "item"])
+        top_sales_item_total = float(df.loc[top_idx, "total"])
+        top_share_item_rate  = round((top_sales_item_total)/ total_sales / 100, 1)
     else:
         top_sales_item_name, top_sales_item_total, top_sales_item_rate = "-", 0.0, 0.0
         
@@ -85,7 +85,7 @@ for csv_path in csv_files:
     
     ai_comment = (
         f"{data_lavel} 月に総売り上げ {total_sales} 円、平均単価（加重） {avg_price_weighted} 円です。\n"
-        f"最も売れた商品は「{top_sales_item_name}」で、全体の {top_sales_item_rate}% 占めています。\n"
+        f"最も売れた商品は「{top_sales_item_name}」で、全体の {top_share_item_rate}% 占めています。\n"
         f"全体的に、状商品の売り上げが構成比の大部分を占める傾向があります"
     )
     
@@ -98,7 +98,7 @@ for csv_path in csv_files:
     graph_total     = plot_df["total"]
 
     # 棒グラフ
-    bars = axes[0].bat(
+    bars = axes[0].bar(
         graph_labels,
         graph_total,
         color="blue"
@@ -151,3 +151,31 @@ for csv_path in csv_files:
     with pd.ExcelWriter(out_dir / f"average_price_weighted_{data_lavel}.xlsx") as writer:
         monthly_tabel.to_excel(writer, index=False)
     
+    # 全月サマリー用の行を追加
+    summary_rows.append({
+        "monthly": data_lavel,
+        "total_sales": total_sales,
+        "average_price": avg_price_weighted,
+        "top_item": top_sales_item_name,
+        "top_share_percent": top_share_item_rate
+    })
+    
+    print(ai_comment)
+
+    
+# 月の比較表の出力
+summary_df = pd.DataFrame(summary_rows)
+
+# 月順に並べる（”YYYY_MM”想定）
+summary_df = summary_df.sort_values("monthly").reset_index(drop=True)
+
+# 前月比(％)を追加
+summary_df["mom_percent"] = (
+    summary_df["total_sales"]
+    .pct_change()
+    .mul(100)
+    .round(1)
+)
+
+# CSV保存(Execlで開きやすいようにutf-8-sig)
+summary_df.to_csv(out_root / "summary_all_monthly", index=False, encoding="utf-8-sing")

@@ -94,5 +94,60 @@ for csv_path in csv_files:
 
     # 棒グラフ用のデータ(降順)
     plot_df         = df.sort_values("total", ascending=False).reset_index(drop=True)
-    graph_labels    = plot_df["item"] 
+    graph_labels    = plot_df["item"]
+    graph_total     = plot_df["total"]
+
+    # 棒グラフ
+    bars = axes[0].bat(
+        graph_labels,
+        graph_total,
+        color="blue"
+    )
+    axes[0].set_ylabel("item")
+    axes[0].set_xlabel("total_sales(JPY)")
+    axes[0].set_title(f"{data_lavel} total_sales")
+    axes[0].tick_params(axis="x", rotation=30)
+
+    for bar in bars:
+        x = bar.get_x() + bar.get_width() / 2
+        y = bar.get_height()
+        axes[0].text(
+            x,
+            y,
+            f"{int(y):,}",
+            ha="center",
+            va="bottom"
+        )
+        
+    # 円グラフ用に上位TOP_Nだけ取り出し
+    top_total_df = plot_df["total"].head(TOP_N)
+    top_item_df  = plot_df["item"].head(TOP_N)
+
+    # 円グラフ作成
+    if total_sales > 0:
+        axes[1].pie(
+            top_total_df,
+            labels=top_item_df,
+            startangle=90,
+            autopct="%1.1f%%",
+            counterclock=False
+        )
+        axes[1].axis("equal")
+    else:
+        axes[1].axis("off")
+        axes[1].text(0.0, 0.5, "データなし", fontsize=11, va="center")
+
+    axes[1].set_title(f"{data_lavel} total_sales_share")
+
+    fig.tight_layout()
+    plt.savefig(out_dir / f"report_{data_lavel}.png", dpi=150)
+    plt.close(fig)
+
+    # コメントテキスト出力
+    plt.savefig(out_dir / f"comment_{data_lavel}.txt").write_text(ai_comment, encoding="utf-8")
+
+    # Excel出力（明細＋サマリー
+    monthly_tabel = pd.concat([df, summary_tail], ignore_index=False)
+    with pd.ExcelWriter(out_dir / f"average_price_weighted_{data_lavel}.xlsx") as writer:
+        monthly_tabel.to_excel(writer, index=False)
     

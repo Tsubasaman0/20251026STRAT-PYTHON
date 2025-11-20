@@ -30,24 +30,37 @@ print(category_sum)
 print("\n=== Payment Summary ===")
 print(payment_sum)
 
-daily_sum = monthly.groupby(monthly["date"].dt.day)["amount"].sum().sort_values(ascending=False).reset_index()
-
-daily_sum.columns = ["Date", "amount"]
+daily_sum = monthly.groupby(monthly["date"].dt.day)["amount"].sum().sort_index()
+daily_df = daily_sum.reset_index()
+daily_df.columns = ["day", "amount"]
 
 print("\n=== Daily Summary ===")
 print(daily_sum)
 
 # グラフの作成
+
+# 保存先フォルダの作成
+out_dir = Path("charts") / year_month
+out_dir.mkdir(parents=True, exist_ok=True)
+
 # categoryごと支出金額
-category_sum.plot(kind="bar")
+plt.figure(facecolor="w")
+plt.bar(category_sum["category"], category_sum["amount"])
 plt.title("category_summary")
 plt.xlabel("category")
+plt.xticks(rotation=45)
 plt.ylabel("amount")
+plt.tight_layout()
+plt.savefig(out_dir / "category.png")
 plt.show()
 
 # 日別の支出額
-daily_sum.sort_index().plot(kind="line")
+plt.figure(facecolor="w")
+plt.plot(daily_df["day"], daily_df["amount"], marker="o")
 plt.title("daily_summary")
-plt.xlabel("date")
-plt.ylabel("amout")
+plt.xlabel("day")
+plt.ylabel("amount")
+plt.xticks(daily_df["day"])
+plt.tight_layout()
+plt.savefig(out_dir / "daily.png")
 plt.show()

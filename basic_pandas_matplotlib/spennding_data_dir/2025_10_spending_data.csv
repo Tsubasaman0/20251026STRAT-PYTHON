@@ -1,0 +1,11 @@
+date,category,item,amount,payment
+2025-10-03,drink,cola,150,paypay
+2025-10-05,drink,coffee,500,paypay
+2025-10-10,drink,coffee,400,paypay
+2025-10-10,transport,taxi,1300,cash
+2025-10-10,utility,gas,8000,card
+2025-10-12,utility,electricity,15000,card
+2025-10-17,other,laptop,90000,paypay
+2025-10-22,drink,soda,2000,card
+2025-10-22,food,mac,600,cash
+2025-10-26,food,bread,600,card

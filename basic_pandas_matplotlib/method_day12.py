@@ -63,7 +63,7 @@ for csv_path in csv_files:
         top_idx              = df["total"].idxmax()
         top_sales_item_name  = str(df.loc[top_idx, "item"])
         top_sales_item_total = float(df.loc[top_idx, "total"])
-        top_share_item_rate  = round((top_sales_item_total)/ total_sales / 100, 1)
+        top_share_item_rate  = round(top_sales_item_total / total_sales * 100, 1)
     else:
         top_sales_item_name, top_sales_item_total, top_sales_item_rate = "-", 0.0, 0.0
         
@@ -144,7 +144,7 @@ for csv_path in csv_files:
     plt.close(fig)
 
     # コメントテキスト出力
-    plt.savefig(out_dir / f"comment_{data_lavel}.txt").write_text(ai_comment, encoding="utf-8")
+    (out_dir / f"comment_{data_lavel}.txt").write_text(ai_comment, encoding="utf-8")
 
     # Excel出力（明細＋サマリー
     monthly_tabel = pd.concat([df, summary_tail], ignore_index=False)
@@ -178,4 +178,4 @@ summary_df["mom_percent"] = (
 )
 
 # CSV保存(Execlで開きやすいようにutf-8-sig)
-summary_df.to_csv(out_root / "summary_all_monthly", index=False, encoding="utf-8-sing")
+summary_df.to_csv(out_root / "summary_all_monthly.csv", index=False, encoding="utf-8-sig")

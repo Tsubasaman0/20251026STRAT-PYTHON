@@ -1,0 +1,11 @@
+date,category,item,amount,payment
+2025-11-01,food,mac,500,cash
+2025-11-12,food,rice,2000,card
+2025-11-16,transport,bus,200,paypay
+2025-11-17,transport,taxi,500,cash
+2025-11-18,utility,gas,6000,card
+2025-11-18,utility,electricity,12000,card
+2025-11-19,food,mac,1000,cash
+2025-11-25,drink,soda,100,cash
+2025-11-27,food,mac,600,paypay
+2025-11-29,other,cap,2000,paypay

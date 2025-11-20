@@ -1,0 +1,11 @@
+date,category,item,amount,payment
+2025-09-01,food,mac,700,paypay
+2025-09-10,food,rice5kg,4500,card
+2025-09-16,drink,coffee,400,paypay
+2025-09-16,transport,taxi,1300,cash
+2025-09-17,utility,gas,5600,card
+2025-09-18,utility,electricity,10000,card
+2025-09-19,other,supplement,2000,paypay
+2025-09-20,drink,soda,500,paypay
+2025-09-21,food,mac,600,cash
+2025-09-25,drink,coffee,600,paypay

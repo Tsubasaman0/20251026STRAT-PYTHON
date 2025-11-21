@@ -1,5 +1,8 @@
 import pandas as pd
 import datetime as dt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
 # expense.csv読込
 df_exp = pd.read_csv("../expense.csv")
@@ -21,6 +24,25 @@ pivot = monthly.pivot_table(
 
 pivot["total"] = pivot.sum(axis=1)
 
-print(pivot)
-
+# print(pivot)
 # X, y
+
+X = pivot[["drink,", "food", "other", "transport", "utility"]]
+y = pivot["total"]
+
+# テストデータ作成
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# モデルの作成
+model = LinearRegression()
+model.fit(X, y)
+
+# X_train, X_test, y_train, y_testになにが入っているか確認
+print("x_train", X_train)
+
+# 予測データの作成
+y_pred = model.predict(X_test)
+print("R2:", r2_score(y_test, y_pred))
+

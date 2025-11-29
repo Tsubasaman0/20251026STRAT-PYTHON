@@ -1,0 +1,61 @@
+{
+  "povo": {
+    "carrier": "KDDI(au)",
+    "base_fee": 0,
+    "data_system": "topping",
+    "data_plans": [
+      {"name": "使い放題24時間", "data_gb": null, "price_yen": 330,  "valid_hours": 24},
+      {"name": "1GB",           "data_gb": 1,    "price_yen": 390,  "valid_days": 30},
+      {"name": "20GB",          "data_gb": 20,   "price_yen": 2700, "valid_days": 30},
+      {"name": "150GB",         "data_gb": 150,  "price_yen": 12980,"valid_days": 90},
+      {"name": "300GB",         "data_gb": 300,  "price_yen": 26400,"valid_days": 365}
+    ],
+    "call_options": [
+      {"name": "5分かけ放題", "type": "5min_free", "price_yen": 550},
+      {"name": "かけ放題",     "type": "unlimited", "price_yen": 1650}
+    ],
+    "features": [
+      "基本料0円で維持できる",
+      "使うときだけデータ購入する方式",
+      "au回線を利用"
+    ]
+  },
+  "linemo": {
+    "carrier": "SoftBank",
+    "plans": [
+      {
+        "name": "ベストプラン 3GB~10GB",
+        "base_data_gb": 3,
+        "max_data_gb": 10,
+        "base_fee_yen": 990,
+        "max_min_yen": 2090,
+        "includes_5min_calls": false
+      },
+      {
+        "name": "ベストプランV 30GB",
+        "data_gb": 30,
+        "base_fee_yen": 2970,
+        "includes_5min_calls": true
+      }
+    ],
+    "call_options": [
+      {
+        "target_plans": ["ベストプラン 3GB~10GB"],
+        "name": "5分かけ放題",
+        "type": "5min_free",
+        "price_yen": 550
+      },
+      {
+        "target_plans": ["全プラン"],
+        "name": "かけ放題",
+        "type": "unlimited",
+        "price_yen": 1650
+      }
+    ],
+    "features": [
+      "LINEギガフリー(LINEアプリの通信はカウント外)",
+      "オンライン専用ブランド",
+      "シンプルな料金制"
+    ]
+  }
+}

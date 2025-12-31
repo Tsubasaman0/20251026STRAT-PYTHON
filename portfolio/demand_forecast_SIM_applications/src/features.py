@@ -1,15 +1,13 @@
 # features.py
 import pandas as pd
+from src.load_data import load_daily_data
 
 def make_monthly_features(df_daily: pd.DataFrame) -> pd.DataFrame:
-    df = df_daily.copy()
-    df["date"] = pd.to_datetime(df["date"])
-
     # 月次集計
     monthly = (
-        df
+        df_daily
         .set_index("date")
-        .resample("M")["applications"]
+        .resample("ME")["applications"]
         .sum()
         .to_frame()
     )

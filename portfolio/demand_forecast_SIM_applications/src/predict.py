@@ -1,11 +1,9 @@
 # predict.py
-import pandas as pd
 import joblib
-from pathlib import Path
 from src.features import make_monthly_features
-from src.config import MODELS_DIR, get_model_path
+from src.config import  get_model_path
 from src.load_data import load_daily_data
-from src.model_registry import MODEL_NAME, MODEL_VERSION, FEATURES
+from src.model_registry import MODEL_NAME, MODEL_VERSION, FEATURES_PLUS
 
 def load_model():
     model_path = get_model_path(MODEL_NAME, MODEL_VERSION)
@@ -19,7 +17,7 @@ def predict_next_month() -> int:
     df_feat = make_monthly_features(df_daily)
 
     # 3. 最新1行(来月予測の入力)
-    X_last = df_feat[FEATURES].tail(1)
+    X_last = df_feat[FEATURES_PLUS].tail(1)
 
     # 4 .モデル読み込み
     model = load_model()

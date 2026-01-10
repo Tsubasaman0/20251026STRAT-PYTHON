@@ -1,18 +1,18 @@
 # train_model.py
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from pathlib import Path
 import joblib
+
 from src.load_data import load_daily_data
 from src.features import make_monthly_features
-from src.config import MODELS_DIR, get_model_path
-from src.model_registry import MODEL_NAME, MODEL_VERSION, FEATURES
+from src.config import get_model_path
+from src.model_registry import MODEL_NAME, MODEL_VERSION, FEATURES_PLUS
 
 
 def train_model(df_daily: pd.DataFrame):
     df = make_monthly_features(df_daily).dropna()
 
-    X = df[FEATURES]
+    X = df[FEATURES_PLUS]
     y = df["applications"]
 
     model = LinearRegression()

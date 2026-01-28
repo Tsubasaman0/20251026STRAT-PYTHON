@@ -14,6 +14,10 @@ def index():
             data_gb = float(request.form.get("data_gb", "0"))
             calls_5min = int(request.form.get("calls_5min", "0"))
 
+            print(type(request.form["data_gb"]))
+            print(data_gb)
+            print(calls_5min)
+
             # ここでバリデーション
             if data_gb < 0 or calls_5min < 0:
                 raise ValueError("マイナスは不可")
@@ -24,7 +28,8 @@ def index():
             error = "数値を正しく入力してください。(マイナスは不可)"
         except Exception:
             error = "予期せぬエラーが発生しました。入力値を見直してください。"
-
+    
+    print(result)
     return render_template("index.html", result=result, error=error)
 
 

@@ -1,15 +1,15 @@
-import requests
 import json
-import re
+import requests
 
 url = "http://localhost:11434/api/generate"
 
-with open("plans.json", "r") as f:
+with open("plans.json", "r", encoding="utf-8") as f:
     plan_data = json.load(f)
 
 povo = plan_data["povo"]
 linemo = plan_data["linemo"]
 
+# 事実テキスト（そのまま説明用に渡す）
 povo_text = f"""
 povo({povo["carrier"]})
 - 基本料: {povo["base_fee"]}円
@@ -42,42 +42,39 @@ LINEMO({linemo["carrier"]})
     [f" - {feat}" for feat in linemo["features"]]
 )
 
-def calc_povo_monthly_cost(data_gb: float, calls_5min_count: int):
-    """povoのだいたいの料金を計算"""
-    base = int(povo["base_fee"])
 
-    # データ:
-    # 渡された使用GB数に応じて、必要なトッピングGB数を選ぶ
+def calc_povo_monthly_cost(data_gb: float, calls_5min_count: int) -> int:
+    """povoのだいたいの月額（雑でOK）"""
+    base = int(povo["base_fee"])  # 0円
+
+    # 必要量を満たす中で一番安いトッピングを選ぶ
     best_data_price = None
     for p in povo["data_plans"]:
         gb = p.get("data_gb")
         price = p["price_yen"]
-        # data_gbがNobe(24時間使い放題)は一旦無視
         if gb is None:
             continue
         if gb >= data_gb:
             if best_data_price is None or price < best_data_price:
                 best_data_price = price
-    
-    if best_data_price is None:
-        # 全然足りない場合は一番大きい容量を買う
-        best_data_price = max(plan["price_yen"] for plan in povo["data_plans"] if plan.get("data_gb") is not None)
 
- 
-    # 通話:
-    # 5分以内の通話がそれなりにあるという設定
+    if best_data_price is None:
+        best_data_price = max(p["price_yen"] for p in povo["data_plans"])
+
+    # 5分かけ放題をつける前提
     call_option_price = 0
     if calls_5min_count > 0:
         for c in povo["call_options"]:
             if c["name"].startswith("5分"):
-                call_option_price = c["price_yen"]                       
+                call_option_price = c["price_yen"]
                 break
 
     total = base + best_data_price + call_option_price
     return int(total)
 
+
 def calc_linemo_monthly_cost(data_gb: float, calls_5min_count: int) -> int:
-    """LINEMOのだいたいの月額"""
+    """LINEMOのだいたいの月額（雑でOK）"""
     candidates = []
 
     for p in linemo["plans"]:
@@ -85,7 +82,6 @@ def calc_linemo_monthly_cost(data_gb: float, calls_5min_count: int) -> int:
         base_fee = p["base_fee_yen"]
         includes_5min = p["includes_5min_calls"]
 
-        # 必要データに満たしていないプランは候補から外す
         if gb < data_gb:
             continue
 
@@ -96,11 +92,10 @@ def calc_linemo_monthly_cost(data_gb: float, calls_5min_count: int) -> int:
                 if c["name"].startswith("5分"):
                     total += c["price_yen"]
                     break
-        
+
         candidates.append(total)
 
     if not candidates:
-        # どれも足りない場合は、とりあえず最大プランに5分かけ放題をつける
         p = max(linemo["plans"], key=lambda x: x["data_gb"])
         total = p["base_fee_yen"]
         if calls_5min_count > 0 and not p["includes_5min_calls"]:
@@ -111,6 +106,7 @@ def calc_linemo_monthly_cost(data_gb: float, calls_5min_count: int) -> int:
         return int(total)
 
     return int(min(candidates))
+
 
 def choose_best_plan(data_gb: float, calls_5min_count: int):
     povo_cost = calc_povo_monthly_cost(data_gb, calls_5min_count)
@@ -125,17 +121,28 @@ def choose_best_plan(data_gb: float, calls_5min_count: int):
 
     return povo_cost, linemo_cost, recommended
 
-data_gb = 8
-calls_5min = 30
 
-povo_cost, linemo_cost, recommended = choose_best_plan(data_gb, calls_5min)
+if __name__ == "__main__":
+    # ここから実行部分
+    data_gb = 8
+    calls_5min = 30
 
-facts_text = f"""
+    povo_cost, linemo_cost, recommended = choose_best_plan(data_gb, calls_5min)
+
+    print("DEBUG: povo_cost =", povo_cost)
+    print("DEBUG: linemo_cost =", linemo_cost)
+    print("DEBUG: recommended =", recommended)
+
+facts_text = """
 【povo】
-{povo_text}
+- 基本料0円
+- トッピング式
+- au回線
 
 【LINEMO】
-{linemo_text}
+- 3GB, 30GB のプラン
+- 30GB プランは5分かけ放題込み
+- LINEギガフリー
 """
 
 user_profile_ja = f"""
@@ -154,10 +161,11 @@ You are given:
 - The monthly cost of each plan already calculated in Python.
 
 Your job:
-- Explain the situation **in Japanese only**.
-- Do NOT invent any new prices or data amounts.
-- Use ONLY the numbers that appear in FACTS, USER PROFILE, or PYTHON RESULT.
-- Do NOT do any new arithmetic; just reuse the given numbers.
+- The logical content and comparison result are ALREADY decided in PYTHON RESULT.
+- Do NOT add any new logical reasoning.
+- Do NOT describe who is cheaper or more expensive by yourself.
+- Just rewrite the given PYTHON RESULT and FACTS into natural Japanese sentences,
+  without changing any meaning or numbers.
 
 Output format (in Japanese):
 1. ユーザー条件の要約
@@ -183,15 +191,23 @@ PYTHON RESULT (monthly cost, in yen)
 - recommended: {recommended}
 """
 
+print("\nDEBUG: sending request to ollama...")
 payload = {
-    "model": "phi3",
-    "prompt": prompt,
-    "stream": False,
-    "temperature": 0.2,
-}
+        "model": "phi3",
+        "prompt": prompt,
+        "stream": False,
+        "temperature": 0.2,
+    }
 
 res = requests.post(url, json=payload)
-res.raise_for_status()
+print("DEBUG: HTTP status =", res.status_code)
+try:
+    res.raise_for_status()
+except Exception as e:
+    print("HTTP ERROR:", e)
+    print("RAW RESPONSE:", res.text)
+    raise
 
+data = res.json()
 print("\n=== CLEAN RESPONSE ===")
-print(res.json()["response"])
+print(data.get("response", "responseフィールドがありません"))

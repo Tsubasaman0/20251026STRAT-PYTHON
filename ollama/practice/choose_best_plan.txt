@@ -1,0 +1,82 @@
+# choose_best_plan_v2.py
+
+def choose_best_plan_v2(data_gb, calls_5min):
+
+    povo_cost = 0
+    linemo_cost = 0
+
+    # =====povoの料金目安計算=====
+    if data_gb <= 3: # 3GB以下
+        povo_cost += 900
+    elif data_gb <= 6: # 6GB以下
+        povo_cost += 1580
+    elif data_gb <= 30: # 30GB以下
+        povo_cost += 2700
+    else:
+        povo_cost += 2700 # 30GB以上は、30GBの料金で処理
+
+    if calls_5min > 20: # 5分かけ放題なしの場合、従量課金で 30秒22円 × 20回 = 880円 、なので損益分岐点は最低発信回数20回
+        povo_cost += 880
+
+    # ======LINEMOの料金計算=====
+    if data_gb <= 3: # 3GB以下
+        linemo_cost += 990
+        linemo_5min_included = False
+    else:
+        linemo_cost += 2970 # 3GB以上は30GBの料金で処理
+        linemo_5min_included = True # 30GBプランは5分かけ放題が内包
+
+    if calls_5min > 20 and not linemo_5min_included:
+        linemo_cost += 880
+
+    if povo_cost < linemo_cost:
+        return f"おすすめは povo {povo_cost}円/月 \nLINEMO は {linemo_cost}円/月"
+    else:
+        return f"おすすめは LINEMO {linemo_cost}円/月 \npovo は {povo_cost}円/月"
+    
+print(choose_best_plan_v2(1, 0))     # データ少・通話少
+・povo: data_gb=3 → 900円
+	calls_5min > 20 は False, +0
+	合計 900
+・LINEMO: if data_gb <= 3 がTrue、 +990
+	if calls_5min > 20 は False, +0
+	合計 990
+おすすめはpovo
+
+print(choose_best_plan_v2(3, 30))    # 少データ・通話多
+・povo: if data_gb <= 3 がTrue、+900
+	if calls_5min > 20 は True, +880
+	合計 900 + 880 = 1780
+・LINEMO: if data_gb <= 3 がTrue、 +990
+	if calls_5min > 20 は True, +880
+	合計 990 + 880 = 1870
+おすすめはpovo
+
+print(choose_best_plan_v2(8, 30))    # 中データ・通話多（＝自分の条件に近い）
+・povo: if data_gb <= 30 がTrue、+2700
+	if calls_5min > 20 は True, +880
+	合計 2700 + 990 = 3580
+・LINEMO: data_gb の処理で else なので +2970
+	calls_5min_included は False, +0
+	合計 2970
+おすすめはLINEMO
+
+print(choose_best_plan_v2(30, 0))    # 大データ・通話なし
+・povo: if data_gb <= 30 がTrue、+2700
+	if calls_5min > 20 は False, +0
+	合計 2700
+・LINEMO: data_gb の処理で else なので +2970
+	calls_5min_included は False, +0
+	合計 2970
+おすすめはpovo
+
+print(choose_best_plan_v2(50, 40))   # 想定外に多い
+・povo: data_gb の処理は else、+2700
+	if calls_5min > 20 は True, +880
+	合計 2700 + 880 = 3580
+・LINEMO: data_gb の処理は else なので +2970
+	calls_5min_included は False, +0
+	合計 2970
+おすすめはLINEMO
+
+それぞれのコストを比較して、料金が安い=数値が比較的低い より得なプラン料金を出力。

@@ -1,37 +1,63 @@
 # main.py
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, List
 import joblib
 from src.config import MODEL_FAQ_PATH
 
-app = FastAPI()
-model = None # なぜここでNoneのmodelを作る
 
-class PredictRequest(BaseModel): # ここでクラ作る意味は?
-    text: str # テキストをstrで読みこむ?どういうこと
+app = FastAPI(title="Mobile Shop FAQ Classifier", version="1.0.0")
+model = None 
+
+class PredictRequest(BaseModel):
+    text: str = Field(..., min_length=2, description="問い合わせしたい文")
+
+class Candidate(BaseModel):
+    label: str
+    proba: float
+
+class PredictResponse(BaseModel):
+    label: str
+    confidence: Optional[float]
+    needs_review: bool
+    candidates: Optional[list[Candidate]] = None
 
 @app.on_event("startup")
 def load_model():
     global model # なぜglobalにする? 
     model = joblib.load(MODEL_FAQ_PATH)
 
-@app.get("/")
-def root():
-    return {"message" : "ok"}
-
 @app.get("/health")
 def health():
-    return { "status" : "ok"}
+    return { "status" : "ok", "model_loaded": model is not None}
 
-@app.post("/predict")
-def predict(req: PredictRequest): # 全体的になにしているかわからない
+@app.post("/predict", response_model=PredictResponse)
+def predict(req: PredictRequest):
+    if model is None:
+        raise HTTPException(status_code=500, detail="Model is not loaded")
+    
+    text = req.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Text is empty")
+    
     label = model.predict([req.text])[0]
 
     confidence = None
-    # 確信度（predict_probaがあるモデルの場合）
-    proba = None
+    needs_review = True
+    candidates = None
+
     if hasattr(model, "predict_proba"):
         proba = model.predict_proba([req.text])[0]
         confidence = float(proba.max())
+        needs_review = confidence < 0.65
 
-    return {"label" : label, "confidence" : confidence}
+        # 上位候補 top3 を返す
+        labels = list(model.classes_)
+        pairs = sorted(zip(labels, proba), key=lambda x: x[1], reverse=True)[:3]
+        candidates = [{"label": l, "proba": float(p)} for l, p in pairs]
+
+    return PredictResponse(
+        label=label,
+        confidence=confidence,
+        needs_review=needs_review,
+        candidates=candidates)

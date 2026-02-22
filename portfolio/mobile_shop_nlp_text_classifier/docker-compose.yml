@@ -1,0 +1,22 @@
+services:
+  api:
+    build: .
+    container_name: faq-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model:/app/model
+      - ./data:/app/data
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  ui:
+    build: .
+    container_name: faq-ui
+    depends_on:
+      - api
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./model:/app/model
+      - ./data:/app/data
+    command: ["streamlit", "run", "ui/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501"]

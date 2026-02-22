@@ -7,7 +7,6 @@ from src.config import MODEL_FAQ_PATH
 
 
 app = FastAPI(title="Mobile Shop FAQ Classifier", version="1.0.0")
-model = None 
 
 class PredictRequest(BaseModel):
     text: str = Field(..., min_length=2, description="問い合わせしたい文")
@@ -24,15 +23,16 @@ class PredictResponse(BaseModel):
 
 @app.on_event("startup")
 def load_model():
-    global model # なぜglobalにする? 
-    model = joblib.load(MODEL_FAQ_PATH)
+    app.state.model = joblib.load(MODEL_FAQ_PATH)
 
 @app.get("/health")
-def health():
+def health(): 
+    model = getattr(app.state, "model", None)
     return { "status" : "ok", "model_loaded": model is not None}
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
+    model = getattr(app.state, "model", None)
     if model is None:
         raise HTTPException(status_code=500, detail="Model is not loaded")
     

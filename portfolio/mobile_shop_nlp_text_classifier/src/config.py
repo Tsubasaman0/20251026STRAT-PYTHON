@@ -13,3 +13,6 @@ MODEL_FAQ_DIR = MODEL_DIR / "faq_classifier"
 # === ファイルパス ====
 FAQ_CSV_PATH = DATA_DIR / "raw" / "faq.csv"
 MODEL_FAQ_PATH = MODEL_FAQ_DIR / "model.joblib"
+
+# === 閾値 ===
+CONFIDENCE_THRESHOLD = 0.65

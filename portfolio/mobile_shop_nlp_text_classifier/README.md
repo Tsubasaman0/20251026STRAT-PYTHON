@@ -107,6 +107,7 @@ Macro F1: 0.70
   以下の場合に `true` となる。
   - 確信度（confidence）が 0.65 未満の場合
   - モデルが `predict_proba` を持たず、確信度を算出できない場合
+  - `needs_review` は `CONFIDENCE_THRESHOLD`（デフォルト 0.65）を基準に判定します。モデルが確率出力（`predict_proba`）を持たない場合は、人確認が必要として `True` を返します。
 
 ### 任意項目
 

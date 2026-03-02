@@ -92,10 +92,36 @@ Macro F1: 0.70
 }
 ```
 
-**レスポンス項目**
-- label: 予測された質問カテゴリ
-- confidence: モデルの予測確信度（最大確率）
-- needs_review: 確信度が閾値未満の場合に true
+## レスポンス仕様
+
+本APIは、問い合わせ文を分類し、以下の情報を返却します。
+
+### 必須項目
+
+- `label` (string)  
+  予測された問い合わせカテゴリ。  
+  業務フローの分岐に使用される主要な出力。
+
+- `needs_review` (boolean)  
+  人による確認が必要かどうかを示すフラグ。  
+  以下の場合に `true` となる。
+  - 確信度（confidence）が 0.65 未満の場合
+  - モデルが `predict_proba` を持たず、確信度を算出できない場合
+
+### 任意項目
+
+- `confidence` (float | null)  
+  最大予測確率。  
+  モデルが `predict_proba` を持つ場合のみ返却される。  
+  それ以外の場合は `null`。
+
+- `candidates` (array | null)  
+  上位3件の予測候補と確率の一覧。  
+  モデルが `predict_proba` を持つ場合のみ返却される。  
+  各要素は以下の形式。
+
+  - `label` (string): 候補カテゴリ名  
+  - `proba` (float): 予測確率
 
 ## API設計の意図
 
